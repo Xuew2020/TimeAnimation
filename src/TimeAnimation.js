@@ -116,13 +116,33 @@
         radius: 240,
         data: Array(60).fill(0),
       });
-      
       el.appendChild(this.canvas);
-      setInterval(() => {this.init()}, 1000);
     }
 
-    init() {
-      this.initData();
+    start() {
+      this.initData(new Date(new Date().setSeconds(new Date().getSeconds() + 3)));
+      const list = [...this.year, ...this.month, ...this.day, ...this.hour, ...this.minute, ...this.second];
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      let interval = 100;
+      let p = Promise.resolve();
+      list.forEach(item => {
+        p = p.then(() => {
+          return new Promise((resolve, _) => {
+            setTimeout(() => {
+              this.drawText({
+                textObj: item,
+                center: { x: this.canvas.width / 2, y: this.canvas.height / 2 },
+              });
+              resolve();
+            }, interval-=0.5);
+          })
+        })
+      })
+      p.then(() => setInterval(() => {this.play()}, 1000))
+    }
+
+    play() {
+      this.initData(new Date());
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       this.drawArray(this.year);
       this.drawArray(this.month);
@@ -132,8 +152,7 @@
       this.drawArray(this.second);
     }
 
-    initData() {
-      const current = new Date();
+    initData(current) {
       this.setData(YEARS, this.year, 0);
       this.setData(MONTHS, this.month, current.getMonth() ? current.getMonth() : 7);
       this.setData(DAYS, this.day, current.getDay());
